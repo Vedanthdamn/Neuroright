@@ -47,16 +47,17 @@ def iter_zenodo():
             age_dir = os.path.join(top_dir, age_group)
             if not os.path.isdir(age_dir):
                 continue
-            for fname in os.listdir(age_dir):
-                if not fname.lower().endswith((".jpg", ".jpeg", ".png")):
-                    continue
-                yield {
-                    "image_path": os.path.join(age_dir, fname),
-                    "dataset": "zenodo_engagement",
-                    "label_binary": label_bin,
-                    "label_raw": top,
-                    "age_group": age_group,
-                }
+            for root, _, fnames in os.walk(age_dir):
+                for fname in fnames:
+                    if not fname.lower().endswith((".jpg", ".jpeg", ".png")):
+                        continue
+                    yield {
+                        "image_path": os.path.join(root, fname),
+                        "dataset": "zenodo_engagement",
+                        "label_binary": label_bin,
+                        "label_raw": top,
+                        "age_group": age_group,
+                    }
 
 
 def main():
