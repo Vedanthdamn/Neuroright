@@ -2,15 +2,22 @@ import argparse
 import json
 import os
 import subprocess
+import zipfile
 
 DATASET = "olgaparfenova/daisee"
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 DEST_ROOT = os.path.join(REPO_ROOT, "data", "raw", "daisee")
+LISTING_CACHE = os.path.join(DEST_ROOT, "_file_listing.json")
 
 
-def list_all_files():
+def list_all_files(use_cache=True):
     """Paginate through the full kaggle dataset file listing (thousands of
-    individual video files, not per-split archives)."""
+    individual video files, not per-split archives). Cached locally since
+    a full listing takes ~46 paginated API calls."""
+    if use_cache and os.path.exists(LISTING_CACHE):
+        with open(LISTING_CACHE) as f:
+            return json.load(f)
+
     all_files = []
     token = None
     while True:
@@ -31,6 +38,10 @@ def list_all_files():
         if not next_token or not batch or next_token == token:
             break
         token = next_token
+
+    os.makedirs(os.path.dirname(LISTING_CACHE), exist_ok=True)
+    with open(LISTING_CACHE, "w") as f:
+        json.dump(all_files, f)
     return all_files
 
 
@@ -51,12 +62,26 @@ def download_split(split, files, dest_dir, limit=None, skip_existing=True):
         if skip_existing and os.path.exists(local_path) and os.path.getsize(local_path) == f["size"]:
             n_skipped += 1
             continue
-        os.makedirs(os.path.dirname(local_path), exist_ok=True)
-        cmd = ["kaggle", "datasets", "download", "-d", DATASET, "-f", f["name"], "-p", os.path.dirname(local_path), "-q"]
+        local_dir = os.path.dirname(local_path)
+        os.makedirs(local_dir, exist_ok=True)
+        cmd = ["kaggle", "datasets", "download", "-d", DATASET, "-f", f["name"], "-p", local_dir, "-q"]
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode != 0:
             n_failed += 1
             print(f"[{i+1}/{len(split_files)}] FAILED {f['name']}: {result.stderr.strip()}")
+            continue
+
+        # kaggle's -f download always wraps the file in a zip; unwrap it ourselves
+        # (the CLI's --unzip flag only applies to whole-dataset downloads, not -f)
+        zip_path = local_path + ".zip"
+        if os.path.exists(zip_path):
+            with zipfile.ZipFile(zip_path) as zf:
+                zf.extractall(local_dir)
+            os.remove(zip_path)
+
+        if not os.path.exists(local_path):
+            n_failed += 1
+            print(f"[{i+1}/{len(split_files)}] FAILED {f['name']}: no file after unzip")
             continue
         n_downloaded += 1
         if (i + 1) % 50 == 0:
