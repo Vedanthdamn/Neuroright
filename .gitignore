@@ -7,7 +7,10 @@ __pycache__/
 .DS_Store
 
 data/raw/
-data/processed/
+data/processed/*
+!data/processed/daisee_sequences/
+data/processed/daisee_sequences/*
+!data/processed/daisee_sequences/*.parquet
 data/self_collected/
 *.zip
 *.mp4
