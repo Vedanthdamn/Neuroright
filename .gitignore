@@ -12,9 +12,6 @@ data/self_collected/
 *.zip
 *.mp4
 
-results/*.png
-results/*.jpg
-
 models/*.pt
 models/*.pth
 models/*.h5
