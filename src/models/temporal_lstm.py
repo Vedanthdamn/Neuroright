@@ -18,6 +18,7 @@ RESULTS_DIR = os.path.join(REPO_ROOT, "results")
 FEATURE_COLS = [
     "ear_left", "ear_right", "ear_mean",
     "gaze_left_x", "gaze_right_x", "gaze_x_mean",
+    "gaze_left_y", "gaze_right_y", "gaze_y_mean",
     "head_pitch", "head_yaw", "head_roll",
 ]
 SEQ_LEN = 50
@@ -58,9 +59,13 @@ class EngagementLSTM(nn.Module):
         self.dropout = nn.Dropout(dropout)
         self.fc = nn.Linear(hidden_size * 2, n_classes)
 
-    def forward(self, x):
+    def embed(self, x):
+        """pooled recurrent representation, used as fusion input"""
         out, _ = self.lstm(x)
-        pooled = out.mean(dim=1)
+        return out.mean(dim=1)
+
+    def forward(self, x):
+        pooled = self.embed(x)
         return self.fc(self.dropout(pooled))
 
 
@@ -254,6 +259,11 @@ def train(n_classes, epochs=120, patience=15, seed=42):
         "confusion_matrix": cm.tolist(),
         "report": classification_report(y_test, test_pred, target_names=names,
                                         zero_division=0, output_dict=True),
+        # kept for fusion; stripped before the results json is written
+        "_model": model,
+        "_splits": {"train": train_idx, "val": val_idx, "test": test_idx},
+        "_normalised_X": Xn,
+        "_y": y,
     }
 
 
@@ -262,7 +272,7 @@ def run_seeds(n_classes, seeds):
     Average over seeds to get a number worth reporting."""
     runs = [train(n_classes, seed=s) for s in seeds]
 
-    summary = dict(runs[-1])
+    summary = {k: v for k, v in runs[-1].items() if not k.startswith("_")}
     for metric in ("test_accuracy", "test_macro_f1"):
         values = [r[metric] for r in runs]
         summary[metric] = float(np.mean(values))
