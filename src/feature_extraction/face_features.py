@@ -15,6 +15,11 @@ LEFT_IRIS = [473, 474, 475, 476, 477]
 LEFT_EYE_CORNERS = (362, 263)
 RIGHT_EYE_CORNERS = (33, 133)
 
+# upper/lower lid points (the vertical pairs from the EAR contours above),
+# used to place the iris vertically within the eye opening
+LEFT_EYE_LIDS = ([385, 387], [380, 373])
+RIGHT_EYE_LIDS = ([160, 158], [144, 153])
+
 # 3D reference points (generic face model, in mm) for solvePnP head pose
 MODEL_POINTS_3D = np.array([
     (0.0, 0.0, 0.0),        # nose tip (1)
@@ -39,11 +44,24 @@ def _eye_aspect_ratio(pts):
 
 
 def _gaze_ratio(iris_pts, corner_left, corner_right):
+    """horizontal iris position, 0 at one corner and 1 at the other"""
     iris_center = np.mean(iris_pts, axis=0)
     span = corner_right[0] - corner_left[0]
     if span == 0:
         return 0.5
     return (iris_center[0] - corner_left[0]) / span
+
+
+def _gaze_ratio_vertical(iris_pts, upper_pts, lower_pts):
+    """vertical iris position, 0 at the upper lid and 1 at the lower lid"""
+    iris_center = np.mean(iris_pts, axis=0)
+    upper_y = np.mean([p[1] for p in upper_pts])
+    lower_y = np.mean([p[1] for p in lower_pts])
+    span = lower_y - upper_y
+    if span <= 0:
+        return 0.5
+    # on a closed eye the lid span collapses and this ratio blows up, so bound it
+    return float(np.clip((iris_center[1] - upper_y) / span, -0.5, 1.5))
 
 
 def _head_pose(landmarks_px, image_size):
@@ -108,6 +126,15 @@ class FaceFeatureExtractor:
             [px[i] for i in RIGHT_IRIS], px[RIGHT_EYE_CORNERS[0]], px[RIGHT_EYE_CORNERS[1]]
         )
 
+        left_gaze_y = _gaze_ratio_vertical(
+            [px[i] for i in LEFT_IRIS],
+            [px[i] for i in LEFT_EYE_LIDS[0]], [px[i] for i in LEFT_EYE_LIDS[1]],
+        )
+        right_gaze_y = _gaze_ratio_vertical(
+            [px[i] for i in RIGHT_IRIS],
+            [px[i] for i in RIGHT_EYE_LIDS[0]], [px[i] for i in RIGHT_EYE_LIDS[1]],
+        )
+
         pose = _head_pose(px, (h, w))
         if pose is None:
             pitch, yaw, roll = np.nan, np.nan, np.nan
@@ -121,6 +148,9 @@ class FaceFeatureExtractor:
             "gaze_left_x": left_gaze,
             "gaze_right_x": right_gaze,
             "gaze_x_mean": (left_gaze + right_gaze) / 2.0,
+            "gaze_left_y": left_gaze_y,
+            "gaze_right_y": right_gaze_y,
+            "gaze_y_mean": (left_gaze_y + right_gaze_y) / 2.0,
             "head_pitch": pitch,
             "head_yaw": yaw,
             "head_roll": roll,
