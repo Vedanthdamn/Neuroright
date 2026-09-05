@@ -1,0 +1,119 @@
+{
+  "2_class": {
+    "majority": {
+      "accuracy": 0.6853146853146853,
+      "accuracy_std": 0.0,
+      "macro_f1": 0.4066390041493776,
+      "macro_f1_std": 0.0
+    },
+    "rf_original": {
+      "accuracy": 0.6643356643356644,
+      "accuracy_std": 0.020267659784880345,
+      "macro_f1": 0.6096660308629429,
+      "macro_f1_std": 0.020340513664641353
+    },
+    "rf_enriched": {
+      "accuracy": 0.6755244755244755,
+      "accuracy_std": 0.023652495839563317,
+      "macro_f1": 0.6102327127437355,
+      "macro_f1_std": 0.03241352957572336
+    },
+    "lstm_enriched": {
+      "accuracy": 0.593006993006993,
+      "accuracy_std": 0.03291916726137013,
+      "macro_f1": 0.5592380773111565,
+      "macro_f1_std": 0.04419844838417529
+    },
+    "fusion": {
+      "accuracy": 0.6293706293706294,
+      "accuracy_std": 0.018235531203364016,
+      "macro_f1": 0.5696812898629473,
+      "macro_f1_std": 0.023188160213938873
+    },
+    "_meta": {
+      "n_clips": 1429,
+      "n_original_features": 36,
+      "n_enriched_features": 75,
+      "n_embedding_dims": 256,
+      "seeds": [
+        42,
+        43,
+        44,
+        45,
+        46
+      ],
+      "fusion_confusion_matrix": [
+        [
+          72,
+          26
+        ],
+        [
+          25,
+          20
+        ]
+      ]
+    }
+  },
+  "3_class": {
+    "majority": {
+      "accuracy": 0.5692307692307692,
+      "accuracy_std": 0.003425859780116326,
+      "macro_f1": 0.24182804232804234,
+      "macro_f1_std": 0.000926658818037021
+    },
+    "rf_original": {
+      "accuracy": 0.5174825174825176,
+      "accuracy_std": 0.019278389863063225,
+      "macro_f1": 0.4381756795730668,
+      "macro_f1_std": 0.0177527474621971
+    },
+    "rf_enriched": {
+      "accuracy": 0.5202797202797202,
+      "accuracy_std": 0.014399482714667103,
+      "macro_f1": 0.4385645748426799,
+      "macro_f1_std": 0.03911688383684946
+    },
+    "lstm_enriched": {
+      "accuracy": 0.4755244755244756,
+      "accuracy_std": 0.052703338968997974,
+      "macro_f1": 0.42655377640263586,
+      "macro_f1_std": 0.04170887241778934
+    },
+    "fusion": {
+      "accuracy": 0.5328671328671329,
+      "accuracy_std": 0.028111540198939546,
+      "macro_f1": 0.44921523557219734,
+      "macro_f1_std": 0.03818261619538934
+    },
+    "_meta": {
+      "n_clips": 1429,
+      "n_original_features": 36,
+      "n_enriched_features": 75,
+      "n_embedding_dims": 256,
+      "seeds": [
+        42,
+        43,
+        44,
+        45,
+        46
+      ],
+      "fusion_confusion_matrix": [
+        [
+          4,
+          11,
+          1
+        ],
+        [
+          5,
+          60,
+          17
+        ],
+        [
+          1,
+          28,
+          16
+        ]
+      ]
+    }
+  }
+}
