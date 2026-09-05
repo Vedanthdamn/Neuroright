@@ -1,0 +1,15 @@
+{
+  "n_clips_fitted": 1429,
+  "n_features": 75,
+  "n_clusters": 2,
+  "cluster_sizes": [
+    316,
+    1113
+  ],
+  "movement_cluster": 0,
+  "stillness_cluster": 1,
+  "cluster_mean_scaled_head_motion": {
+    "0": 0.8551828405861152,
+    "1": -0.2428012377585017
+  }
+}
